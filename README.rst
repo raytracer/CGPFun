@@ -2,7 +2,7 @@
 CGPFun
 ======
 CGPFun is a small Clojure program to demonstrate Cartesian Genetic Programming(CGP).
-It's purpose is to approximate a subset of continuous R^\ :sup:`n`\ -> R functions given a set of input and
+It's purpose is to approximate a subset of continuous R\ :sup:`n`\ -> R functions given a set of input and
 output test values. Furthermore, this short program helps the author to deepen his understanding
 of Clojure.
 
