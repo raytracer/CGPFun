@@ -1,0 +1,14 @@
+#no eclipse stuff
+.settings/
+.classpath
+.project
+
+#no clojure jars
+
+clojure.jar
+clojure-src.jar
+
+#no binaries
+
+bin/
+classes/
