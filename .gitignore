@@ -2,7 +2,7 @@
 .settings/
 .classpath
 .project
-
+.gitignore
 #no clojure jars
 
 clojure.jar
