@@ -14,7 +14,7 @@ TODO
 - Further improving performance
 - Implementing crossover (original CGP uses mutation only)
 - Clean up the code and add tests
-- Add a web interface for better visualisation
+- Add a web interface for better visualization
   especially for R -> R functions(maybe)
 
 License

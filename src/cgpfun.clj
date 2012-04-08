@@ -142,9 +142,9 @@
   (mutate
     [this factor]
     "returns a mutated copy for a given mutation factor")
-  (fittness
+  (fitness
     [this xs ys]
-    "returns the fittness for a given set of xy pairs")
+    "returns the fitness for a given set of xy pairs")
   (print-result
     [this]
     "prints the resulting formula *debug*"))
@@ -164,14 +164,16 @@
               (recur (inc i) (assoc! mnodes x (NopNode. (rand-int x))))
               (recur (inc i) (assoc! mnodes x (random-node x height offset)))))
           (Field. width height inputs output (persistent! mnodes))))))
-  (fittness
+  (fitness
     [this xs ys]
-    (let [n (count ys)]
+    (let [n (count ys)
+          ins (count inputs)]
       (loop [i 0 fit 0.0]
           (if (< i n)
             (let [tempns (loop [j 0 ns (transient nodes)]
-                           (if (< j (count inputs))
-                             (recur (inc j) (assoc! ns j (ConstNode. (nth xs (+ i j)))))
+                           (if (< j ins)
+                             (recur (inc j)
+                                    (assoc! ns j (ConstNode. (nth xs (+ (* i ins) j)))))
                              ns))
                   val (compute output tempns)
                   diff (abs (- val (nth ys i)))]
@@ -194,31 +196,48 @@
             (persistent! (conj! v output))))]
     (Field. width height inputs output nodes)))
 
+(defn return-best [x y xs ys]
+  "returns the fitter of the two individuals x and y"
+  (if (<= (fitness x xs ys) (fitness y xs ys))
+    x
+    y))
+
 
 (defn generations
   "returns the fittest individual after n generations"
   [field n mutations factor xs ys]
-  (let [rb (defn return-best [x y]
-             (let [f1 (fittness x xs ys)
-                   f2 (fittness y xs ys)]
-               (if (<= f1 f2)
-                 x
-                 y)))]
-      (loop [i 0 indv field]
-        (if (< i n)
-          (recur (inc i) (reduce return-best indv (take mutations (repeatedly #(mutate indv factor)))))
-          indv))))
+  (loop [i 0 indv field]
+    (if (< i n)
+      (recur (inc i) 
+             (reduce #(return-best %1 %2 xs ys) indv 
+                     (take mutations (repeatedly 
+                                       #(mutate indv factor)))))
+      indv)))
+
+(defn islands
+  "creates n islands with a specified number of generation following a migration"
+  [n migrations gens mutations factor xs ys width height inputs]
+  (let [start (take n (repeatedly #(create-field width height inputs)))]
+    (loop [mig 0 current start]
+      (if (< mig migrations) 
+        (recur (inc mig)
+               (repeat n (reduce #(return-best %1 %2 xs ys)
+                                 (pmap  #(generations % gens mutations factor xs ys)
+                                        current))))
+        (first current)))))
 
 ;;test the implementation
 
 (def field (create-field 4 4[(VarNode. "x")]))
 
 ;test sets
-(def xs [0.5 1.0 2.0 4.0 5.0 8.0])
-(def ys [2.0 1.0 0.5 0.25 0.2 0.125])
+;(def xs [0.5 1.0 2.0 4.0 5.0 8.0])
+;(def ys [2.0 1.0 0.5 0.25 0.2 0.125])
+(def xs [1.0 1.0 2.0 4.0 5.0 8.0 10.0 2.0])
+(def ys [1.0     8.0     40.0    20.0])
 
-
-(def best (time (generations field 1000 100 0.2 xs ys)))
+;(def best (time (generations field 100 100 0.2 xs ys)))
+(def best (time (islands 2 10 100 100 0.2 xs ys 3 3 [(VarNode. "a") (VarNode. "m")])))
 
 (println (print-result best))
-(println (fittness best xs ys))
+(println (fitness best xs ys))
