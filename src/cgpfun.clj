@@ -23,14 +23,14 @@
 
 ;;helper
 
-;(set! *warn-on-reflection* true)
+(set! *warn-on-reflection* true)
 
 (defn rand-int-min 
   "rand-int with a minimum"
   [min max]
   (+ (rand-int (- max min)) min))
 
-(defn abs [#^Float x] (Math/abs x))
+(defn abs [^double x] (Math/abs x))
 
 ;;nodes
 
@@ -56,6 +56,20 @@
           n2 (nth nodes pos2)] 
       (str "(" (compute-string n1 nodes) " + " (compute-string n2 nodes) ")"))))
 
+(defrecord SubNode [pos1 pos2]
+  
+  Compute
+  (compute
+    [this nodes]
+    (let [n1 (nth nodes pos1)
+          n2 (nth nodes pos2)]
+      (- (compute n1 nodes) (compute n2 nodes))))
+  (compute-string
+    [this nodes]
+    (let [n1 (nth nodes pos1)
+          n2 (nth nodes pos2)] 
+      (str "(" (compute-string n1 nodes) " - " (compute-string n2 nodes) ")"))))
+
 (defrecord MulNode [pos1 pos2]
   
   Compute
@@ -78,7 +92,7 @@
     (let [n1 (nth nodes pos1)
           n2 (nth nodes pos2)
           v2raw (compute n2 nodes)
-          v2 (if (zero? v2raw) Float/POSITIVE_INFINITY v2raw)]
+          v2 (if (zero? v2raw) Double/POSITIVE_INFINITY v2raw)]
       (/ (compute n1 nodes) v2)))
   (compute-string
     [this nodes]
@@ -86,7 +100,7 @@
           n2 (nth nodes pos2)] 
       (str "(" (compute-string n1 nodes) " / " (compute-string n2 nodes) ")"))))
 
-(defrecord ConstNode [#^float value]
+(defrecord ConstNode [value]
   
   Compute
   (compute
@@ -119,22 +133,25 @@
 (defn random-node
   "returns a randomly generated node at the given pos"
   [pos height offset]
-  (let [choose (rand-int 5)
+  (let [choose (rand-int 6)
         max-pos (- pos (rem (- pos offset) height))]
     (cond
     (= choose 0) (AddNode.
                    (rand-int max-pos)
                    (rand-int max-pos))
-    (= choose 1) (MulNode.
+    (= choose 1) (SubNode.
                    (rand-int max-pos)
                    (rand-int max-pos))
-    (= choose 2) (DivNode.
+    (= choose 2) (MulNode.
                    (rand-int max-pos)
                    (rand-int max-pos))
-    (= choose 3) (NopNode.
+    (= choose 3) (DivNode.
+                   (rand-int max-pos)
                    (rand-int max-pos))
-    (= choose 4) (ConstNode.
-                   (float (inc (rand-int 10)))))))
+    (= choose 4) (NopNode.
+                   (rand-int max-pos))
+    (= choose 5) (ConstNode.
+                   (double (rand-int-min -10 11))))))
 
 ;;field
 
@@ -157,23 +174,23 @@
     (let [size (count nodes)
           offset (count inputs)
           n (int (* (- size offset) factor))]
-      (loop [i 0 mnodes (transient nodes)]
+      (loop [i 0 mnodes nodes]
         (if (< i n)
           (let [x (rand-int-min offset size)]
             (if (= x (dec size))
-              (recur (inc i) (assoc! mnodes x (NopNode. (rand-int x))))
-              (recur (inc i) (assoc! mnodes x (random-node x height offset)))))
-          (Field. width height inputs output (persistent! mnodes))))))
+              (recur (inc i) (assoc mnodes x (NopNode. (rand-int x))))
+              (recur (inc i) (assoc mnodes x (random-node x height offset)))))
+          (Field. width height inputs output mnodes)))))
   (fitness
     [this xs ys]
     (let [n (count ys)
           ins (count inputs)]
-      (loop [i 0 fit 0.0]
+      (loop [i 0 fit (double 0.0)]
           (if (< i n)
-            (let [tempns (loop [j 0 ns (transient nodes)]
+            (let [tempns (loop [j 0 ns nodes]
                            (if (< j ins)
                              (recur (inc j)
-                                    (assoc! ns j (ConstNode. (nth xs (+ (* i ins) j)))))
+                                    (assoc ns j (ConstNode. (double (nth xs (+ (* i ins) j))))))
                              ns))
                   val (compute output tempns)
                   diff (abs (- val (nth ys i)))]
@@ -228,16 +245,16 @@
 
 ;;test the implementation
 
-(def field (create-field 4 4[(VarNode. "x")]))
+(def field (create-field 4 4 [(VarNode. "x")]))
 
 ;test sets
-;(def xs [0.5 1.0 2.0 4.0 5.0 8.0])
-;(def ys [2.0 1.0 0.5 0.25 0.2 0.125])
-(def xs [1.0 1.0 2.0 4.0 5.0 8.0 10.0 2.0])
-(def ys [1.0     8.0     40.0    20.0])
+(def xs [0.5 1.0 2.0 4.0 5.0 8.0])
+(def ys [-2.0 -1.0 -0.5 -0.25 -0.2 -0.125])
+;(def xs [1.0 1.0 2.0 4.0 5.0 8.0 10.0 2.0])
+;(def ys [1.0     8.0     40.0    20.0])
 
 ;(def best (time (generations field 100 100 0.2 xs ys)))
-(def best (time (islands 2 10 100 100 0.2 xs ys 3 3 [(VarNode. "a") (VarNode. "m")])))
+(def best (time (islands 2 10 1000 1000 0.2 xs ys 3 3 [(VarNode. "x")])))
 
 (println (print-result best))
 (println (fitness best xs ys))
