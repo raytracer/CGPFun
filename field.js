@@ -2,11 +2,14 @@
 // A representation of the whole node grid.
 var async = require('async'),
     an = require('./addNode.js'),
+    sn = require('./subNode.js'),
     mn = require('./mulNode.js'),
+    dn = require('./divNode.js'),
+    pn = require('./powNode.js'),
     cn = require('./constNode.js'),
     nn = require('./nopNode.js');
 
-var nodeTypes = [cn, an, nn, mn];
+var nodeTypes = [cn, an, sn, nn, mn, dn, pn];
 
 var Field = function(inputs, width, height) {
     this.width = width;
@@ -74,7 +77,7 @@ Field.prototype.rateFitness = function(insets, outset) {
         }
 
         var val = this.output.calculate(this);
-        fitness += Math.abs(val - outset[i]);
+        fitness += Math.abs((isNaN(val) ? Infinity : val) - outset[i]);
     }
 
     this.fitness = fitness;

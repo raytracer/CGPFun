@@ -6,8 +6,8 @@ var Field = require('./field.js'),
     vn = require('./varNode.js'),
     island = require('./island.js');
 
-var insets = [[0.0], [1.0], [2.0], [3.0]];
-    outset = [7.0, 9.0, 11.0, 13.0];
+var insets = [[1.0], [2.0], [3.0], [4.0]];
+    outset = [0.0, 1.0, 7.0, 2.0];
 
 if (cluster.isMaster) {
     var app = express();
@@ -22,10 +22,12 @@ if (cluster.isMaster) {
             onlineWorkers++;
 
             worker.send({
-                'init' : 100,
-                'generations' : 1000,
+                'init' : 100000,
+                'generations' : 10000,
                 'mutations' : 1000,
-                'rate' : 0.2
+                'rate' : 0.2,
+                'height': 4,
+                'width': 10 
             });
         }
 
@@ -53,7 +55,7 @@ if (cluster.isMaster) {
         var fields = new Array(config.init);
 
         for (var i = 0; i < fields.length; i++) {
-            fields[i] = new Field([new vn.VarNode('x')], 3, 3);
+            fields[i] = new Field([new vn.VarNode('x')], config.width, config.height);
             fields[i].initialize();
             fields[i].rateFitness(insets, outset);
         }

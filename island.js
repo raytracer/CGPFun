@@ -6,6 +6,8 @@ var generations = function(start, nrOfGenerations, rateOfMutation, nrOfMutations
     for (var i = 0; i < nrOfGenerations; i++) {
         var gen = best;
 
+        if (i % 1000 === 0) console.log("Generation: ", i);
+
         for (var j = 0; j < nrOfMutations; j++) {
             var current = gen.clone();
             current.mutate(rateOfMutation);

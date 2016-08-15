@@ -1,5 +1,5 @@
 // subNode.js
-// A node that subtracts the result of two input nodes together.
+// A node that subtracts the result of two input nodes.
 
 var SubNode = function(in1, in2) {
     this.in1 = in1;
