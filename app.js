@@ -2,50 +2,60 @@ var express = require('express'),
     cluster = require('cluster'),
     numCPUs = require('os').cpus().length;
 
+
 var Field = require('./field.js'),
     vn = require('./varNode.js'),
     island = require('./island.js');
 
-var insets = [[1.0], [2.0], [3.0], [4.0]];
-    outset = [0.0, 1.0, 7.0, 2.0];
+var insets = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0]];
+var outset = [1, 1, 2, 3, 5, 8];
 
 if (cluster.isMaster) {
     var app = express();
+    var expressWs = require('express-ws')(app);
 
-    app.get('/', function(req, res){
-        var onlineWorkers = 0;
-        var results = {};
+    app.ws('/echo', function(ws, req) {
+        ws.on('message', function(msg) {
+            var data = JSON.parse(msg);
+            var onlineWorkers = 0;
+            var results = {};
 
-        for (var i = 0; i < numCPUs; i++) {
-            var worker = cluster.fork();
+            for (var i = 0; i < numCPUs; i++) {
+                var worker = cluster.fork();
 
-            onlineWorkers++;
+                onlineWorkers++;
 
-            worker.send({
-                'init' : 100000,
-                'generations' : 10000,
-                'mutations' : 1000,
-                'rate' : 0.2,
-                'height': 4,
-                'width': 10 
-            });
-        }
-
-        function messageHandler(msg) {
-            results[msg.id] = {'Term' : msg.term, 'Fitness' : msg.fitness};
-        }
-
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].on('message', messageHandler);
-        });
-
-        cluster.on('exit', function(worker, code, signal) {
-            onlineWorkers--;
-            if (onlineWorkers === 0) {
-                res.send(results);
+                worker.send({
+                    'init' : data.init,
+                    'generations' : data.generations,
+                    'mutations' : data.mutations,
+                    'rate' : data.rate,
+                    'height': data.height,
+                    'width': data.width
+                });
             }
-        });
 
+            function messageHandler(msg) {
+                results[msg.id] = {'Term' : msg.term, 'Fitness' : msg.fitness};
+            }
+
+            Object.keys(cluster.workers).forEach(function(id) {
+                cluster.workers[id].on('message', messageHandler);
+            });
+
+            cluster.on('exit', function(worker, code, signal) {
+                onlineWorkers--;
+                if (onlineWorkers === 0) {
+                    ws.send(JSON.stringify(results));
+                }
+            });
+        });
+    });
+
+    app.use(express.static(__dirname + '/public'));
+
+    app.get('/', function(req, res) {
+        res.sendfile('./public/index.html');
     });
 
     app.listen(3000);

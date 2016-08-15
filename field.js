@@ -3,13 +3,14 @@
 var async = require('async'),
     an = require('./addNode.js'),
     sn = require('./subNode.js'),
+    sqrtn = require('./sqrtNode.js'),
     mn = require('./mulNode.js'),
     dn = require('./divNode.js'),
     pn = require('./powNode.js'),
     cn = require('./constNode.js'),
     nn = require('./nopNode.js');
 
-var nodeTypes = [cn, an, sn, nn, mn, dn, pn];
+var nodeTypes = [cn, an, sn, nn, mn, dn, pn, sqrtn];
 
 var Field = function(inputs, width, height) {
     this.width = width;

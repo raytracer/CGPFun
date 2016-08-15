@@ -1,0 +1,40 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        <title>A CGP interface</title>
+        <meta name="description" content="A CGP interface">
+        <meta name="author" content="Christoph Müller">
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+        <script src="client.js"></script>
+    </head>
+
+    <body style="padding: 1em;">
+        <form action="/compute" class="pure-form pure-form-stacked">
+            <fieldset>
+                <label for="generations">Generations:</label>
+                <input name="generations" id="generations" type="number" value="1000">
+
+                <label for="mutations">Mutations:</label>
+                <input name="mutations" id="mutations" type="number" value="1000">
+
+                <label for="rate">Rate:</label>
+                <input name="rate" id="rate" type="number" value="0.2" step="0.1">
+
+                <label for="init">Init:</label>
+                <input name="init" id="init" type="number" value="10000">
+
+                <label for="height">Height:</label>
+                <input name="height" id="height" type="number" value="3">
+
+                <label for="width">Width:</label>
+                <input name="width" id="width" type="number" value="8">
+
+                <button type="submit" class="pure-button pure-button-primary">Start</button>
+            </fieldset>
+        </form>
+    </body>
+</html>
