@@ -20,7 +20,6 @@ TODO Clojure
 TODO Javascript
 ---------------
 
-- Port all the clojure nodes
 - Add a migration scheme
 
 License
