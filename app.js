@@ -7,9 +7,6 @@ var Field = require('./field.js'),
     vn = require('./varNode.js'),
     island = require('./island.js');
 
-var insets = [[1.0], [2.0], [3.0], [4.0], [5.0], [6.0]];
-var outset = [1, 1, 2, 3, 5, 8];
-
 if (cluster.isMaster) {
     var app = express();
     var expressWs = require('express-ws')(app);
@@ -79,7 +76,7 @@ if (cluster.isMaster) {
         var best = island.generations(fields[0], config.generations,
                                                  config.mutations,
                                                  config.rate,
-                                                 insets, outset);
+                                                 config.insets, config.outset);
 
         process.send({'fitness' : best.fitness,
                       'term' : best.output.toString(best),

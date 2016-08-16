@@ -23,8 +23,8 @@ $(document).ready(function() {
             height: 500,
             data: [{
                 fn: term, color: 'blue',
-                nSamples: 100,
-                graphType: 'scatter'
+                nSamples: 500,
+                graphType: 'polyline'
             },
             {
                 points: zip([inputs, outputs]),
