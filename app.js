@@ -31,7 +31,9 @@ if (cluster.isMaster) {
                     'mutations' : data.mutations,
                     'rate' : data.rate,
                     'height': data.height,
-                    'width': data.width
+                    'width': data.width,
+                    'insets': data.inputs,
+                    'outset': data.outputs
                 });
             }
 
@@ -67,7 +69,7 @@ if (cluster.isMaster) {
         for (var i = 0; i < fields.length; i++) {
             fields[i] = new Field([new vn.VarNode('x')], config.width, config.height);
             fields[i].initialize();
-            fields[i].rateFitness(insets, outset);
+            fields[i].rateFitness(config.insets, config.outset);
         }
 
         fields = fields.sort(function(a, b) {

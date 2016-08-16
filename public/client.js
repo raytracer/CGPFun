@@ -2,7 +2,21 @@ $(document).ready(function() {
     var connection = new WebSocket('ws://localhost:3000/echo');
 
     connection.onmessage = function (e) {
-        console.log('Server: ' + e.data);
+        var obj = JSON.parse(e.data);
+        var first = obj[Object.keys(obj)[0]];
+        var term = first.Term;
+        var fitness = first.Fitness;
+
+        $('#term').text(`${term}, Fitness: ${fitness}`);
+
+        functionPlot({
+            target: '#graph',
+            data: [{
+                fn: term, color: 'blue',
+                nSamples: 100,
+                graphType: 'scatter'
+            }]
+        });
     };
 
     $('form').submit(function(event) {
@@ -15,6 +29,8 @@ $(document).ready(function() {
         data.generations = $("#generations").val();
         data.height = $("#height").val();
         data.width = $("#width").val();
+        data.inputs = $("#inputs").val().split(",").map(function (val) {return [+val];});
+        data.outputs = $("#outputs").val().split(",").map(function (val) {return +val;});
 
         connection.send(JSON.stringify(data));
 
