@@ -1,19 +1,35 @@
+function zip(arrays) {
+    return arrays[0].map(function(_,i){
+        return arrays.map(function(array){return array[i];});
+    });
+}
+
 $(document).ready(function() {
     var connection = new WebSocket('ws://localhost:3000/echo');
 
     connection.onmessage = function (e) {
         var obj = JSON.parse(e.data);
-        var first = obj[Object.keys(obj)[0]];
-        var term = first.Term;
-        var fitness = first.Fitness;
+        var best = Object.keys(obj).map(function(key) {return obj[key];}).sort(function(funcA, funcB) {return funcA.Fitness - funcB.Fitness;})[0];
+        var term = best.Term;
+        var fitness = best.Fitness;
+        var inputs = $("#inputs").val().split(",").map(function (val) {return +val;});
+        var outputs = $("#outputs").val().split(",").map(function (val) {return +val;});
 
         $('#term').text(`${term}, Fitness: ${fitness}`);
 
         functionPlot({
             target: '#graph',
+            width: 1000,
+            height: 500,
             data: [{
                 fn: term, color: 'blue',
                 nSamples: 100,
+                graphType: 'scatter'
+            },
+            {
+                points: zip([inputs, outputs]),
+                fnType: 'points',
+                color: 'red',
                 graphType: 'scatter'
             }]
         });
